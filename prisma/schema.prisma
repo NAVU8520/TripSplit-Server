@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        String   @id @default(uuid())
+  customerId String?  @unique
+  email     String   @unique
+  password  String?  // Optional for OAuth users
+  name      String?
+  avatar    String?
+  dateOfBirth DateTime?
+  provider  String   @default("local") // local, google, etc.
+  emailVerified Boolean @default(false)
+  verificationToken String?
+  verificationTokenExpiry DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tripsCreated Trip[] @relation("TripCreator")
+  participants Participant[]
+  expensesPaid Expense[]
+  settlementsPaid Settlement[] @relation("SettlementPayer")
+  settlementsReceived Settlement[] @relation("SettlementReceiver")
+
+  @@index([customerId])
+}
+
+model Trip {
+  id           String   @id @default(uuid())
+  name         String
+  baseCurrency String
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  creatorId String
+  creator   User   @relation("TripCreator", fields: [creatorId], references: [id])
+
+  participants Participant[]
+  expenses     Expense[]
+  settlements  Settlement[]
+}
+
+model Participant {
+  id        String   @id @default(uuid())
+  tripId    String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  trip      Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+  
+  expenseSplits ExpenseSplit[]
+
+  @@unique([tripId, userId])
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  tripId      String
+  title       String
+  amount      Float
+  currency    String
+  date        DateTime @default(now())
+  category    String
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  payerId     String
+  payer       User     @relation(fields: [payerId], references: [id])
+
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  splits      ExpenseSplit[]
+}
+
+model ExpenseSplit {
+  id           String   @id @default(uuid())
+  expenseId    String
+  participantId String
+  amount       Float
+  percentage   Float?
+
+  expense      Expense     @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  participant  Participant @relation(fields: [participantId], references: [id])
+}
+
+model Settlement {
+  id          String   @id @default(uuid())
+  tripId      String
+  fromUserId  String
+  toUserId    String
+  amount      Float
+  currency    String
+  status      String   @default("PENDING") // PENDING, COMPLETED
+  createdAt   DateTime @default(now())
+
+  trip        Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  fromUser    User     @relation("SettlementPayer", fields: [fromUserId], references: [id])
+  toUser      User     @relation("SettlementReceiver", fields: [toUserId], references: [id])
+}
