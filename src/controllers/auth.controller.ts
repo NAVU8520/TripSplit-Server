@@ -76,24 +76,29 @@ export const signup = async (req: Request, res: Response) => {
             },
         });
 
-        // Send verification email (don't fail signup if email fails)
-        try {
-            await sendVerificationEmail(email, user.name || 'User', verificationToken);
-            console.log(`✅ Verification email sent to: ${email}`);
-        } catch (emailError) {
-            console.error('⚠️  Failed to send verification email:', emailError);
-            console.log(`📧 Verification link (use this to verify manually):`);
-            console.log(`   http://localhost:5174/verify/${verificationToken}`);
-        }
+        // Send verification email in background (don't block response)
+        sendVerificationEmail(email, user.name || 'User', verificationToken)
+            .then(() => console.log(`✅ Verification email sent to: ${email}`))
+            .catch((emailError) => {
+                console.error('⚠️  Failed to send verification email:', emailError);
+                // Log the token so we can verify manually if needed
+                console.log(`📧 Verification link (use this to verify manually):`);
+                // Use the CLIENT_URL if available, otherwise localhost
+                const baseUrl = process.env.CLIENT_URL || 'http://localhost:5174';
+                console.log(`   ${baseUrl}/verify/${verificationToken}`);
+            });        // Use the CLIENT_URL if available, otherwise localhost
+        const baseUrl = process.env.CLIENT_URL || 'http://localhost:5174';
+        console.log(`   ${baseUrl}/verify/${verificationToken}`);
+    });
 
-        res.json({
-            message: 'Signup successful! Please check your email to verify your account.',
-            email: user.email,
-        });
-    } catch (error) {
-        console.error('Signup error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    res.json({
+        message: 'Signup successful! Please check your email to verify your account.',
+        email: user.email,
+    });
+} catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+}
 };
 
 export const login = async (req: Request, res: Response) => {
