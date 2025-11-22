@@ -51,6 +51,11 @@ async function initializeTransporter() {
                     },
                     logger: true, // Log to console
                     debug: true,  // Include debug info
+                    tls: {
+                        rejectUnauthorized: false // Help with some certificate issues
+                    },
+                    // Force IPv4 to avoid IPv6 connection issues
+                    family: 4,
                 });
                 console.log('📧 Email service initialized (Gmail SMTP)');
                 console.log(`   Sending from: ${emailUser}`);
