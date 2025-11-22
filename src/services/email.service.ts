@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
+import type { Transporter, TransportOptions } from 'nodemailer';
 
 let transporter: Transporter | null = null;
 let initPromise: Promise<void> | null = null;
@@ -56,7 +56,7 @@ async function initializeTransporter() {
                     },
                     // Force IPv4 to avoid IPv6 connection issues
                     family: 4,
-                });
+                } as any);
                 console.log('📧 Email service initialized (Gmail SMTP)');
                 console.log(`   Sending from: ${emailUser}`);
             }
