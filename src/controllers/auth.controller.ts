@@ -86,19 +86,16 @@ export const signup = async (req: Request, res: Response) => {
                 // Use the CLIENT_URL if available, otherwise localhost
                 const baseUrl = process.env.CLIENT_URL || 'http://localhost:5174';
                 console.log(`   ${baseUrl}/verify/${verificationToken}`);
-            });        // Use the CLIENT_URL if available, otherwise localhost
-        const baseUrl = process.env.CLIENT_URL || 'http://localhost:5174';
-        console.log(`   ${baseUrl}/verify/${verificationToken}`);
-    });
+            });
 
-    res.json({
-        message: 'Signup successful! Please check your email to verify your account.',
-        email: user.email,
-    });
-} catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-}
+        res.json({
+            message: 'Signup successful! Please check your email to verify your account.',
+            email: user.email,
+        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 };
 
 export const login = async (req: Request, res: Response) => {
