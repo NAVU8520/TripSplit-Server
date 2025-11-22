@@ -39,6 +39,8 @@ async function initializeTransporter() {
             } else {
                 // Use Gmail SMTP for production
                 const isSecure = emailPort === 465;
+                console.log(`📧 Configuring Email: Host=${emailHost} Port=${emailPort} Secure=${isSecure} User=${emailUser}`);
+
                 transporter = nodemailer.createTransport({
                     host: emailHost,
                     port: emailPort,
@@ -47,6 +49,8 @@ async function initializeTransporter() {
                         user: emailUser,
                         pass: emailPassword,
                     },
+                    logger: true, // Log to console
+                    debug: true,  // Include debug info
                 });
                 console.log('📧 Email service initialized (Gmail SMTP)');
                 console.log(`   Sending from: ${emailUser}`);
