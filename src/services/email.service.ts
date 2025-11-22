@@ -38,10 +38,11 @@ async function initializeTransporter() {
                 console.log(`   Preview emails at: https://ethereal.email`);
             } else {
                 // Use Gmail SMTP for production
+                const isSecure = emailPort === 465;
                 transporter = nodemailer.createTransport({
                     host: emailHost,
                     port: emailPort,
-                    secure: false, // Use STARTTLS
+                    secure: isSecure, // true for 465, false for other ports
                     auth: {
                         user: emailUser,
                         pass: emailPassword,
